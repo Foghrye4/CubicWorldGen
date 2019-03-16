@@ -29,15 +29,20 @@ import net.malisis.core.client.gui.component.container.UIContainer;
 import net.malisis.core.client.gui.component.decoration.UILabel;
 import net.malisis.core.client.gui.component.decoration.UISeparator;
 import net.malisis.core.client.gui.component.interaction.UIButton;
+import net.malisis.core.client.gui.component.interaction.UISelect;
 import net.malisis.core.client.gui.component.interaction.UITextField;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.world.biome.Biome;
 
+import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.makeBiomeList;
 import static io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.MalisisGuiUtils.malisisText;
+import static io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.gui.CustomCubicGui.WIDTH_2_COL;
 
 import com.google.common.eventbus.Subscribe;
 
 import io.github.opencubicchunks.cubicchunks.cubicgen.flat.Layer;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.BiomeOption;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatCubicGui;
 import io.github.opencubicchunks.cubicchunks.cubicgen.common.gui.FlatLayersTab;
 
@@ -55,6 +60,8 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
     private final UISeparator separator;
     private final UITextField fromField;
     private final UITextField toField;
+    private final UISelect<BiomeOption> biome;
+    @SuppressWarnings("rawtypes")
     private final UIBlockStateButton blockButton;
 
     private final FlatCubicGui gui;
@@ -118,6 +125,9 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
         fromField = new UITextField(gui, String.valueOf(this.layer.fromY), false).setPosition(from.getWidth() + 10, 45).setSize(40, 5);
         add(fromField);
 
+        biome = makeBiomeList(gui).setPosition(fromField.getX() + fromField.getWidth() + 10, 0).setSize(80, 15).setZIndex(Integer.MAX_VALUE);
+        add(biome);
+
         separator = new UISeparator(gui, false).setColor(0x767676).setPosition(0, to.getY() + to.getHeight() + 3)
                 .setSize(UIComponent.INHERITED, 1);
         super.add(separator);
@@ -132,7 +142,7 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
     }
 
     protected void addLayer() {
-        Layer newLayer = new Layer(this.layer.toY, this.layer.toY + 1, Blocks.SANDSTONE.getDefaultState());
+        Layer newLayer = new Layer(this.layer.toY, this.layer.toY + 1, null, Blocks.SANDSTONE.getDefaultState());
         this.flatLayersTab.add(this, newLayer);
     }
 
@@ -154,6 +164,10 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
             e.printStackTrace();
         }
         return toY;
+    }
+    
+    public Biome getBiome() {
+        return biome.getSelectedValue().getBiome();
     }
 
     public void setBlockState(IBlockState blockStateTo) {

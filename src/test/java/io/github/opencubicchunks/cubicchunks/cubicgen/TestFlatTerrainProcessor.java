@@ -85,7 +85,7 @@ public class TestFlatTerrainProcessor {
         
         // Single layer in a middle of every cube
         for (int i = checkFromY; i <= checkToY; i++)
-            fgs.layers.put(8 + Coords.cubeToMinBlock(i), new Layer(8 + Coords.cubeToMinBlock(i), 9 + Coords.cubeToMinBlock(i), nw));
+            fgs.layers.put(8 + Coords.cubeToMinBlock(i), new Layer(8 + Coords.cubeToMinBlock(i), 9 + Coords.cubeToMinBlock(i), null, nw));
         when(worldInfo.getGeneratorOptions()).thenReturn(fgs.toJson());
         ftp = new FlatTerrainProcessor(world);
         for (int i = checkFromY; i <= checkToY; i++) {
@@ -95,7 +95,7 @@ public class TestFlatTerrainProcessor {
         
         // Two layers with a gap in-between
         for (int i = checkFromY; i <= checkToY; i++)
-            fgs.layers.put(12 + Coords.cubeToMinBlock(i), new Layer(12 + Coords.cubeToMinBlock(i), 13 + Coords.cubeToMinBlock(i), nw));
+            fgs.layers.put(12 + Coords.cubeToMinBlock(i), new Layer(12 + Coords.cubeToMinBlock(i), 13 + Coords.cubeToMinBlock(i), null, nw));
         when(worldInfo.getGeneratorOptions()).thenReturn(fgs.toJson());
         ftp = new FlatTerrainProcessor(world);
         for (int i = checkFromY; i <= checkToY; i++) {

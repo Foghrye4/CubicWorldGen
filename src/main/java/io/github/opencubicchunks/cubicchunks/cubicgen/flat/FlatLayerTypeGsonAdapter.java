@@ -24,80 +24,71 @@
 package io.github.opencubicchunks.cubicchunks.cubicgen.flat;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 
-import com.google.common.base.Optional;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTUtil;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.biome.Biome;
 
-@SuppressWarnings({"unchecked", "rawtypes"})
 public class FlatLayerTypeGsonAdapter extends TypeAdapter<Layer> {
 
     @Override
     public void write(JsonWriter out, Layer value) throws IOException {
+        System.out.println("writing biome" + value.biome);
         out.beginObject();
         out.name("fromY");
         out.value(value.fromY);
         out.name("toY");
         out.value(value.toY);
-        out.name("blockRegistryName");
-        String blockRegistryName = Block.REGISTRY.getNameForObject(value.blockState.getBlock()).toString();
-        out.value(blockRegistryName);
-        value.blockState.getProperties().forEach((p, v) -> {
-            try {
-                out.name(p.getName());
-                out.value(getValueName(p, v));
-            } catch (IOException e) {
-                throw new UncheckedIOException("Input error while converting to Json a BlockState instance of block " + blockRegistryName
-                        + " for config of flat cube type world.", e);
-            }
-        });
+        out.name("blockstate");
+        NBTTagCompound tag = new NBTTagCompound();
+        NBTUtil.writeBlockState(tag, value.blockState);
+        out.value(tag.toString());
+        if (value.biome != null) {
+            out.name("biome");
+            out.value(value.biome.getRegistryName().toString());
+        }
         out.endObject();
     }
 
-    private String getValueName(IProperty property, Comparable v) {
-        return property.getName(v);
-    }
-
     @Override
-    public Layer read(JsonReader in) throws IOException {
-        in.beginObject();
-        in.nextName();
-        int fromY = in.nextInt();
-        in.nextName();
-        int toY = in.nextInt();
-        in.nextName();
-        Block block = Block.getBlockFromName(in.nextString());
-        IBlockState blockState = block.getBlockState().getBaseState();
-        while (in.hasNext()) {
-            IProperty property = block.getBlockState().getProperty(in.nextName());
-            blockState = blockState.withProperty(property, findPropertyValueByName(property, in.nextString()));
-        }
-        Layer layer = new Layer(fromY, toY, blockState);
-        in.endObject();
-        return layer;
-    }
-
-    private Comparable findPropertyValueByName(IProperty property, String valueIn) {
-        Optional<Comparable> value = property.parseValue(valueIn);
-        if (value.isPresent()) {
-            return value.get();
-        } else {
-            for (Object v : property.getAllowedValues()) {
-                if (isValueEqualTo(property, (Comparable) v, valueIn)) {
-                    return (Comparable) v;
+    public Layer read(JsonReader reader) throws IOException {
+        reader.beginObject();
+        int fromY = Integer.MIN_VALUE;
+        int toY = Integer.MAX_VALUE;
+        IBlockState blockState = Blocks.STONE.getDefaultState();
+        Biome biome = null;
+        while (reader.hasNext()) {
+            String name = reader.nextName();
+            if (name.equals("fromY"))
+                fromY = reader.nextInt();
+            else if (name.equals("toY"))
+                toY = reader.nextInt();
+            else if (name.equals("blockstate")) {
+                NBTTagCompound tag;
+                try {
+                    tag = JsonToNBT.getTagFromJson(reader.nextString());
+                    blockState = NBTUtil.readBlockState(tag);
+                } catch (NBTException e) {
+                    e.printStackTrace();
                 }
+            } else if (name.equals("biome")) {
+                biome = Biome.REGISTRY.getObject(new ResourceLocation(reader.nextString()));
+                System.out.println("reading biome" + biome);
+            } else {
+                reader.skipValue();
             }
         }
-        return null;
-    }
-
-    private boolean isValueEqualTo(IProperty property, Comparable value, String valueIn) {
-        return getValueName(property, value).equals(valueIn);
+        Layer layer = new Layer(fromY, toY, biome, blockState);
+        reader.endObject();
+        return layer;
     }
 }

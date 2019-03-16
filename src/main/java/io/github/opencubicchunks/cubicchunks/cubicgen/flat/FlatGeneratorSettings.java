@@ -47,7 +47,7 @@ public class FlatGeneratorSettings {
         if (layers.floorEntry(toY) != null) {
             fromY = layers.floorEntry(toY).getValue().toY;
         }
-        layers.put(fromY, new Layer(fromY, toY, block));
+        layers.put(fromY, new Layer(fromY, toY, null, block));
     }
 
     public String toJson() {

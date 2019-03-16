@@ -97,6 +97,7 @@ public class FlatLayersTab implements Comparator<UIFlatTerrainLayer> {
             Layer layer = uiLayer.layer;
             layer.fromY = uiLayer.getLevelValueFromY();
             layer.toY = uiLayer.getLevelValueToY();
+            layer.biome = uiLayer.getBiome();
             conf.layers.put(layer.fromY, layer);
         }
     }
