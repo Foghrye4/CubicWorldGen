@@ -112,7 +112,7 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
                 });
         add(removeLayer);
 
-        toField = new UITextField(gui, String.valueOf(this.layer.toY), false).setPosition(0, 45, Anchor.RIGHT).setSize(40, 5);
+        toField = new UITextField(gui, String.valueOf(this.layer.toY), false).setPosition(0, 45, Anchor.RIGHT).setSize(60, 5);
         add(toField);
 
         to = new UILabel(gui, malisisText("to_exclusively"), false);
@@ -122,10 +122,10 @@ public class UIFlatTerrainLayer extends UIContainer<UIFlatTerrainLayer> {
         from = new UILabel(gui, malisisText("from"), false).setPosition(0, 47);
         add(from);
 
-        fromField = new UITextField(gui, String.valueOf(this.layer.fromY), false).setPosition(from.getWidth() + 10, 45).setSize(40, 5);
+        fromField = new UITextField(gui, String.valueOf(this.layer.fromY), false).setPosition(from.getWidth() + 10, 45).setSize(60, 5);
         add(fromField);
 
-        biome = makeBiomeList(gui).setPosition(fromField.getX() + fromField.getWidth() + 10, 0).setSize(80, 15).setZIndex(Integer.MAX_VALUE);
+        biome = makeBiomeList(gui).setPosition(fromField.getX() + fromField.getWidth() + 10, 0).setSize(100, 15).setZIndex(400);
         add(biome);
 
         separator = new UISeparator(gui, false).setColor(0x767676).setPosition(0, to.getY() + to.getHeight() + 3)

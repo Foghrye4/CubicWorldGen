@@ -42,7 +42,6 @@ public class FlatLayerTypeGsonAdapter extends TypeAdapter<Layer> {
 
     @Override
     public void write(JsonWriter out, Layer value) throws IOException {
-        System.out.println("writing biome" + value.biome);
         out.beginObject();
         out.name("fromY");
         out.value(value.fromY);
@@ -82,7 +81,6 @@ public class FlatLayerTypeGsonAdapter extends TypeAdapter<Layer> {
                 }
             } else if (name.equals("biome")) {
                 biome = Biome.REGISTRY.getObject(new ResourceLocation(reader.nextString()));
-                System.out.println("reading biome" + biome);
             } else {
                 reader.skipValue();
             }
