@@ -23,17 +23,23 @@
  */
 package io.github.opencubicchunks.cubicchunks.cubicgen.flat;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.world.biome.Biome;
 
 public class Layer implements Comparable<Layer> {
 
     public int fromY;
     public int toY;
+    @Nullable
+    public Biome biome;
     public IBlockState blockState;
 
-    public Layer(int fromY1, int toY1, IBlockState block1) {
+    public Layer(int fromY1, int toY1,@Nullable Biome biome1, IBlockState block1) {
         fromY = fromY1;
         toY = toY1;
+        biome = biome1;
         blockState = block1;
     }
 

@@ -26,16 +26,22 @@ package io.github.opencubicchunks.cubicchunks.cubicgen.flat;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubeGeneratorsRegistry;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.CubePrimer;
 import io.github.opencubicchunks.cubicchunks.api.worldgen.populator.CubePopulatorEvent;
+import io.github.opencubicchunks.cubicchunks.core.util.AddressTools;
+import io.github.opencubicchunks.cubicchunks.core.world.cube.Cube;
 import io.github.opencubicchunks.cubicchunks.api.util.Box;
 import io.github.opencubicchunks.cubicchunks.api.util.Coords;
 import io.github.opencubicchunks.cubicchunks.api.world.ICube;
 import io.github.opencubicchunks.cubicchunks.cubicgen.BasicCubeGenerator;
+import io.github.opencubicchunks.cubicchunks.cubicgen.common.biome.CubicBiome;
+import io.github.opencubicchunks.cubicchunks.cubicgen.customcubic.CustomGeneratorSettings;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.MinecraftForge;
 
+import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 
@@ -49,6 +55,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class FlatTerrainProcessor extends BasicCubeGenerator {
 
     private final FlatGeneratorSettings conf;
+    private static final int BIOME_ARRAY_SIZE = AddressTools.getBiomeAddress(Coords.blockToBiome(ICube.SIZE - 1), Coords.blockToBiome(ICube.SIZE - 1)) + 1;
 
     public FlatTerrainProcessor(World world) {
         super(world);
@@ -86,8 +93,33 @@ public class FlatTerrainProcessor extends BasicCubeGenerator {
         return primer;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void populate(ICube cube) {
+        int cubeY = cube.getY();
+        int floorY = Coords.cubeToMinBlock(cubeY);
+        int topY = Coords.cubeToMaxBlock(cubeY);
+        int floorKeyI = floorY;
+        int topKeyI = topY;
+        Integer floorKey = conf.layers.floorKey(floorY);
+        if (floorKey != null)
+            floorKeyI = floorKey;
+        Integer ceilingKey = conf.layers.ceilingKey(topY);
+        if (ceilingKey != null)
+            topKeyI = ceilingKey;
+        NavigableMap<Integer, Layer> cubeLayerSubMap = conf.layers.subMap(floorKeyI, true, topKeyI, true);
+        for (Entry<Integer, Layer> entry : cubeLayerSubMap.entrySet()) {
+            Layer layer = entry.getValue();
+            if (layer.biome != null) {
+                byte[] ba = new byte[BIOME_ARRAY_SIZE];
+                byte biomeId = (byte) Biome.getIdForBiome(layer.biome);
+                Arrays.fill(ba, biomeId);
+                ((Cube) cube).setBiomeArray(ba);
+                CubicBiome cubicBiome = CubicBiome.getCubic(layer.biome);
+                cubicBiome.getDecorator(CustomGeneratorSettings.defaults()).generate(world, world.rand, cube.getCoords(), layer.biome);
+                break;
+            }
+        }
         /**
          * If event is not canceled we will use cube populators from registry.
          **/
